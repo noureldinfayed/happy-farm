@@ -12,6 +12,8 @@ function buildTransport() {
 }
 
 export async function POST(req: NextRequest) {
+  console.log('[order-api] GMAIL_USER:', process.env.GMAIL_USER ?? 'MISSING')
+  console.log('[order-api] GMAIL_APP_PASSWORD length:', process.env.GMAIL_APP_PASSWORD?.length ?? 'MISSING')
   try {
     const body = await req.json()
     const { name, phone, governorate, products, quantity, notes } = body
