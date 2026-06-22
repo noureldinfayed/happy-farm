@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Tajawal, Cairo } from 'next/font/google'
-import { Analytics } from '@vercel/analytics/react'
+import { Analytics } from '@vercel/analytics/next'
 import LenisProvider from '@/components/ui/LenisProvider'
 import './globals.css'
 
