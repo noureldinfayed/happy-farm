@@ -14,9 +14,9 @@ function buildTransport() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, phone, governorate, products, quantity, notes } = body
+    const { name, phone, governorate, products, quantity, notes, total } = body
 
-    if (!name || !phone || !governorate || !products?.length) {
+    if (!name || !phone || !products?.length) {
       return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
     }
 
@@ -43,21 +43,27 @@ export async function POST(req: NextRequest) {
               <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #e8ede8;" dir="ltr">${phone}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">المحافظة</td>
-              <td style="padding: 10px 12px; background: #f0f4f0; font-size: 14px;">${governorate}</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">المنطقة</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-size: 14px;">الإسكندرية</td>
             </tr>
             <tr>
               <td style="padding: 10px 12px; font-weight: bold; color: #1E6B3C; font-size: 13px; border-bottom: 1px solid #e8ede8;">المنتجات</td>
-              <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #e8ede8;">${Array.isArray(products) ? products.join(' — ') : products}</td>
+              <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #e8ede8;">${Array.isArray(products) ? products.join('<br/>') : products}</td>
             </tr>
             <tr>
-              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">الكمية</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">عدد الزجاجات</td>
               <td style="padding: 10px 12px; background: #f0f4f0; font-size: 14px;">${quantity || 'غير محدد'}</td>
             </tr>
+            ${total ? `
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #1E6B3C; font-size: 13px; border-bottom: 1px solid #e8ede8;">إجمالي الطلب</td>
+              <td style="padding: 10px 12px; font-size: 15px; font-weight: bold; color: #1E6B3C; border-bottom: 1px solid #e8ede8;">${total} جنيه</td>
+            </tr>
+            ` : ''}
             ${notes ? `
             <tr>
-              <td style="padding: 10px 12px; font-weight: bold; color: #1E6B3C; font-size: 13px;">ملاحظات</td>
-              <td style="padding: 10px 12px; font-size: 14px;">${notes}</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">ملاحظات / العنوان</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-size: 14px;">${notes}</td>
             </tr>
             ` : ''}
           </table>

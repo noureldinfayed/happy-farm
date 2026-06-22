@@ -3,56 +3,41 @@
 import { useRef, useState } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { fadeUpVariant } from '@/lib/animations'
-import { CheckCircle, Loader2 } from 'lucide-react'
+import { CheckCircle, Loader2, Minus, Plus } from 'lucide-react'
 
-const PRODUCTS = [
-  'كركم',
-  'شطة',
-  'كمون',
-  'بهارات 7',
-  'فلفل أسمر',
-  'فلفل أبيض',
-  'ثوم بودرة',
-  'بصل بودر',
-  'كزبرة',
-  'قرفة',
-  'زعتر',
-  'حبة البركة',
-  'بابريكا مدخنة',
-  'بهارات بطاطس',
-  'مرقة دجاج',
-  'مرقة لحم',
-  'محاشي',
-  'مشاوي',
-  'كبدة',
+const PRODUCTS: { name: string; price: number; weight: string }[] = [
+  { name: 'كركم',          price: 36, weight: '50 جم' },
+  { name: 'شطة',           price: 23, weight: '50 جم' },
+  { name: 'كمون',          price: 36, weight: '50 جم' },
+  { name: 'بهارات 7',      price: 40, weight: '50 جم' },
+  { name: 'فلفل أسمر',    price: 43, weight: '50 جم' },
+  { name: 'فلفل أبيض',    price: 80, weight: '50 جم' },
+  { name: 'ثوم بودرة',    price: 32, weight: '70 جم' },
+  { name: 'بصل بودر',     price: 32, weight: '50 جم' },
+  { name: 'كزبرة',         price: 26, weight: '50 جم' },
+  { name: 'قرفة',          price: 46, weight: '50 جم' },
+  { name: 'زعتر',          price: 29, weight: '25 جم' },
+  { name: 'حبة البركة',   price: 38, weight: '50 جم' },
+  { name: 'بابريكا مدخنة', price: 40, weight: '50 جم' },
+  { name: 'بهارات بطاطس', price: 33, weight: '50 جم' },
+  { name: 'مرقة دجاج',    price: 30, weight: '70 جم' },
+  { name: 'مرقة لحم',     price: 29, weight: '70 جم' },
+  { name: 'محاشي',         price: 29, weight: '50 جم' },
+  { name: 'مشاوي',         price: 32, weight: '50 جم' },
+  { name: 'كبدة',          price: 31, weight: '50 جم' },
 ]
 
-const GOVERNORATES = [
-  'الإسكندرية', 'القاهرة', 'الجيزة', 'الدقهلية', 'البحيرة',
-  'الشرقية', 'الغربية', 'المنوفية', 'القليوبية', 'الإسماعيلية',
-  'السويس', 'بورسعيد', 'دمياط', 'كفر الشيخ', 'المنيا',
-  'أسيوط', 'سوهاج', 'قنا', 'الأقصر', 'أسوان', 'أخرى',
-]
-
+const MIN_BOTTLES = 6
 const VODAFONE_NUMBER = '01556662920'
 
 interface FormState {
   name: string
   phone: string
-  governorate: string
-  products: string[]
-  quantity: string
+  items: Record<string, number>
   notes: string
 }
 
-const EMPTY: FormState = {
-  name: '',
-  phone: '',
-  governorate: '',
-  products: [],
-  quantity: '',
-  notes: '',
-}
+const EMPTY: FormState = { name: '', phone: '', items: {}, notes: '' }
 
 export default function Order() {
   const ref = useRef<HTMLDivElement>(null)
@@ -62,27 +47,51 @@ export default function Order() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
-  const toggleProduct = (p: string) => {
-    setForm((f) => ({
-      ...f,
-      products: f.products.includes(p) ? f.products.filter((x) => x !== p) : [...f.products, p],
-    }))
+  const totalBottles = Object.values(form.items).reduce((a, b) => a + b, 0)
+  const totalPrice = PRODUCTS.reduce((sum, p) => sum + (form.items[p.name] ?? 0) * p.price, 0)
+  const progressPct = Math.min((totalBottles / MIN_BOTTLES) * 100, 100)
+  const reachedMin = totalBottles >= MIN_BOTTLES
+
+  const setQty = (product: string, delta: number) => {
+    setForm((f) => {
+      const next = Math.max(0, (f.items[product] ?? 0) + delta)
+      const items = { ...f.items }
+      if (next === 0) delete items[product]
+      else items[product] = next
+      return { ...f, items }
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!form.name || !form.phone || form.products.length === 0 || !form.governorate) {
-      setErrorMsg('من فضلك اكمل الاسم والتليفون والمحافظة واختر منتج واحد على الأقل.')
+    if (!form.name || !form.phone) {
+      setErrorMsg('من فضلك اكمل الاسم ورقم الواتساب.')
+      return
+    }
+    if (totalBottles < MIN_BOTTLES) {
+      setErrorMsg(`الحد الأدنى للطلب ${MIN_BOTTLES} زجاجات.`)
       return
     }
     setErrorMsg('')
     setStatus('loading')
 
+    const products = Object.entries(form.items)
+      .filter(([, qty]) => qty > 0)
+      .map(([name, qty]) => `${name} × ${qty}`)
+
     try {
       const res = await fetch('/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name: form.name,
+          phone: form.phone,
+          governorate: 'الإسكندرية',
+          products,
+          quantity: `${totalBottles} زجاجة`,
+          notes: form.notes,
+          total: totalPrice,
+        }),
       })
       if (!res.ok) throw new Error('server error')
       setStatus('success')
@@ -112,8 +121,11 @@ export default function Order() {
             اطلب الآن
           </h2>
           <p className="mt-4 text-muted text-base sm:text-lg max-w-xl leading-relaxed mx-auto">
-            امتلأ النموذج وهنتواصل معك لتأكيد الطلب وتفاصيل الدفع.
+            اختار منتجاتك واملأ بياناتك وهنوصلك على طول
           </p>
+          <div className="mt-4 inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200">
+            🚚 توصيل داخل الإسكندرية فقط
+          </div>
         </motion.div>
 
         <motion.div
@@ -125,7 +137,6 @@ export default function Order() {
         >
           <AnimatePresence mode="wait">
             {status === 'success' ? (
-              /* Success state */
               <motion.div
                 key="success"
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -137,29 +148,20 @@ export default function Order() {
                   <CheckCircle size={40} className="text-green-500" />
                 </div>
                 <div>
-                  <h3 className="font-display font-black text-2xl text-foreground mb-2">
-                    تم استلام طلبك!
-                  </h3>
+                  <h3 className="font-display font-black text-2xl text-foreground mb-2">تم استلام طلبك!</h3>
                   <p className="text-muted text-base leading-relaxed max-w-sm mx-auto">
                     شكرًا لك! هنتواصل معك على واتساب لتأكيد الطلب وتفاصيل الدفع.
                   </p>
                 </div>
-
-                {/* Payment reminder */}
                 <div className="w-full bg-red-50 border border-red-100 rounded-2xl p-5">
                   <p className="font-semibold text-foreground text-sm mb-3 text-center">
                     لتأكيد طلبك — ابعت العربون على فودافون كاش:
                   </p>
-                  <div className="flex items-center justify-center gap-3">
-                    <span className="font-display font-black text-3xl text-red-600 tracking-wider" dir="ltr">
-                      {VODAFONE_NUMBER}
-                    </span>
-                  </div>
-                  <p className="text-muted text-xs text-center mt-2">
-                    ابعت صورة الإيصال على واتساب بعد التحويل
-                  </p>
+                  <span className="font-display font-black text-3xl text-red-600 tracking-wider" dir="ltr">
+                    {VODAFONE_NUMBER}
+                  </span>
+                  <p className="text-muted text-xs text-center mt-2">ابعت صورة الإيصال على واتساب بعد التحويل</p>
                 </div>
-
                 <a
                   href="https://wa.me/201556662920?text=مرحبا، بعت العربون وعايز أكمل طلبي"
                   target="_blank"
@@ -167,20 +169,15 @@ export default function Order() {
                   className="inline-flex items-center gap-2.5 h-12 px-7 rounded-full bg-[#25D366] text-white font-bold text-sm hover:opacity-90 transition-opacity"
                 >
                   <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
                   تواصل الآن على واتساب
                 </a>
-
-                <button
-                  onClick={() => setStatus('idle')}
-                  className="text-sm text-muted hover:text-primary underline underline-offset-2 transition-colors"
-                >
+                <button onClick={() => setStatus('idle')} className="text-sm text-muted hover:text-primary underline underline-offset-2 transition-colors">
                   تقديم طلب جديد
                 </button>
               </motion.div>
             ) : (
-              /* Order form */
               <motion.form
                 key="form"
                 initial={{ opacity: 0 }}
@@ -189,92 +186,84 @@ export default function Order() {
                 onSubmit={handleSubmit}
                 className="flex flex-col gap-6"
               >
-                {/* Name & Phone row */}
+                {/* Name & Phone */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className={labelCls}>الاسم الكامل *</label>
-                    <input
-                      type="text"
-                      placeholder="اسمك هنا"
-                      className={inputCls}
-                      value={form.name}
-                      onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                    />
+                    <input type="text" placeholder="اسمك هنا" className={inputCls}
+                      value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
                   </div>
                   <div>
-                    <label className={labelCls}>رقم الهاتف (واتساب) *</label>
-                    <input
-                      type="tel"
-                      placeholder="01XXXXXXXXX"
-                      className={inputCls}
-                      dir="ltr"
-                      value={form.phone}
-                      onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    />
+                    <label className={labelCls}>رقم الواتساب *</label>
+                    <input type="tel" placeholder="01XXXXXXXXX" className={inputCls} dir="ltr"
+                      value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} />
                   </div>
                 </div>
 
-                {/* Governorate */}
-                <div>
-                  <label className={labelCls}>المحافظة *</label>
-                  <select
-                    className={inputCls}
-                    value={form.governorate}
-                    onChange={(e) => setForm((f) => ({ ...f, governorate: e.target.value }))}
-                  >
-                    <option value="">اختر المحافظة</option>
-                    {GOVERNORATES.map((g) => (
-                      <option key={g} value={g}>{g}</option>
-                    ))}
-                  </select>
+                {/* Progress bar */}
+                <div className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold text-foreground">عدد الزجاجات</span>
+                    <span className={`text-sm font-black tabular-nums transition-colors ${reachedMin ? 'text-green-600' : 'text-muted'}`}>
+                      {totalBottles} / {MIN_BOTTLES}
+                    </span>
+                  </div>
+                  <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full rounded-full bg-gradient-to-r from-green-400 to-green-500"
+                      animate={{ width: `${progressPct}%` }}
+                      transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs transition-colors" style={{ color: reachedMin ? '#16a34a' : '#9ca3af' }}>
+                      {reachedMin
+                        ? '✅ ممتاز! يمكنك إتمام الطلب'
+                        : `محتاج ${MIN_BOTTLES - totalBottles} زجاجة أكتر`}
+                    </p>
+                    {totalPrice > 0 && (
+                      <span className="text-sm font-black text-primary" dir="ltr">
+                        {totalPrice} جنيه
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Products checkboxes */}
+                {/* Products +/- */}
                 <div>
-                  <label className={labelCls}>المنتجات المطلوبة * (يمكن اختيار أكثر من منتج)</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+                  <label className={labelCls}>اختار المنتجات وكميتها *</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {PRODUCTS.map((p) => {
-                      const checked = form.products.includes(p)
+                      const qty = form.items[p.name] ?? 0
                       return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => toggleProduct(p)}
-                          className={`h-11 rounded-xl border-2 text-sm font-semibold transition-all duration-200 active:scale-95 ${
-                            checked
-                              ? 'border-primary bg-primary text-white'
-                              : 'border-gray-200 bg-white text-foreground hover:border-primary/40'
-                          }`}
-                        >
-                          {p}
-                        </button>
+                        <div key={p.name} className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all duration-200 ${qty > 0 ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}>
+                          <div className="flex flex-col min-w-0">
+                            <span className={`text-sm font-semibold leading-tight ${qty > 0 ? 'text-primary' : 'text-foreground'}`}>{p.name}</span>
+                            <span className="text-xs text-muted/60" dir="ltr">{p.price} ج · {p.weight}</span>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0 mr-2">
+                            <button type="button" onClick={() => setQty(p.name, -1)} disabled={qty === 0}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center border-2 border-gray-200 text-muted disabled:opacity-30 hover:border-primary hover:text-primary transition-colors active:scale-90">
+                              <Minus size={12} />
+                            </button>
+                            <span className={`w-5 text-center text-sm font-black tabular-nums ${qty > 0 ? 'text-primary' : 'text-muted'}`}>{qty}</span>
+                            <button type="button" onClick={() => setQty(p.name, 1)}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center border-2 border-gray-200 text-muted hover:border-primary hover:text-primary transition-colors active:scale-90">
+                              <Plus size={12} />
+                            </button>
+                          </div>
+                        </div>
                       )
                     })}
                   </div>
                 </div>
 
-                {/* Quantity */}
-                <div>
-                  <label className={labelCls}>الكمية المطلوبة</label>
-                  <input
-                    type="text"
-                    placeholder="مثال: 10 كرتون، 50 جرة، إلخ"
-                    className={inputCls}
-                    value={form.quantity}
-                    onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                  />
-                </div>
-
                 {/* Notes */}
                 <div>
-                  <label className={labelCls}>ملاحظات إضافية</label>
-                  <textarea
-                    rows={3}
-                    placeholder="أي تفاصيل إضافية أو استفسارات..."
+                  <label className={labelCls}>عنوانك + أي ملاحظات</label>
+                  <textarea rows={3} placeholder="عنوانك بالتفصيل في الإسكندرية، أو أي طلبات إضافية..."
                     className={`${inputCls} resize-none`}
-                    value={form.notes}
-                    onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
-                  />
+                    value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
                 </div>
 
                 {/* Error */}
@@ -287,29 +276,20 @@ export default function Order() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={status === 'loading'}
-                  className="w-full h-14 rounded-full bg-primary text-white font-display font-bold text-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/30 disabled:opacity-60 flex items-center justify-center gap-2"
+                  disabled={status === 'loading' || !reachedMin}
+                  className="w-full h-14 rounded-full bg-primary text-white font-display font-bold text-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {status === 'loading' ? (
-                    <>
-                      <Loader2 size={20} className="animate-spin" />
-                      جاري الإرسال...
-                    </>
+                    <><Loader2 size={20} className="animate-spin" /> جاري الإرسال...</>
                   ) : (
                     'أرسل طلبي الآن'
                   )}
                 </button>
 
                 <div className="bg-red-50 border-2 border-red-200 rounded-2xl px-5 py-4 flex flex-col items-center gap-2 text-center">
-                  <p className="text-red-700 font-bold text-sm">
-                    ⚠️ بعد إرسال الطلب، ابعت العربون على فودافون كاش:
-                  </p>
-                  <span className="font-display font-black text-2xl text-red-600 tracking-widest" dir="ltr">
-                    {VODAFONE_NUMBER}
-                  </span>
-                  <p className="text-red-600 text-xs font-semibold">
-                    وابعتلنا صورة الإيصال على واتساب لتأكيد الطلب
-                  </p>
+                  <p className="text-red-700 font-bold text-sm">⚠️ بعد إرسال الطلب، ابعت العربون على فودافون كاش:</p>
+                  <span className="font-display font-black text-2xl text-red-600 tracking-widest" dir="ltr">{VODAFONE_NUMBER}</span>
+                  <p className="text-red-600 text-xs font-semibold">وابعتلنا صورة الإيصال على واتساب لتأكيد الطلب</p>
                 </div>
               </motion.form>
             )}

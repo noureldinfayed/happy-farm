@@ -12,6 +12,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-amber-100 to-orange-200',
     textColor: 'text-amber-800',
     image: '/images/products/kurkum.png',
+    price: 36, weight: '50 جم',
   },
   {
     name: 'شطة',
@@ -19,6 +20,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-red-100 to-red-200',
     textColor: 'text-red-800',
     image: '/images/products/shata.png',
+    price: 23, weight: '50 جم',
   },
   {
     name: 'كمون',
@@ -26,6 +28,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-yellow-100 to-amber-200',
     textColor: 'text-yellow-800',
     image: '/images/products/kamoun.png',
+    price: 36, weight: '50 جم',
   },
   {
     name: 'بهارات 7',
@@ -33,6 +36,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-orange-100 to-amber-200',
     textColor: 'text-orange-800',
     image: '/images/products/baharat7.png',
+    price: 40, weight: '50 جم',
   },
   {
     name: 'فلفل أسمر',
@@ -40,6 +44,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-stone-200 to-stone-300',
     textColor: 'text-stone-800',
     image: '/images/products/felfel-asmar.png',
+    price: 43, weight: '50 جم',
   },
   {
     name: 'فلفل أبيض',
@@ -47,6 +52,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-slate-50 to-gray-100',
     textColor: 'text-slate-700',
     image: '/images/products/felfel-abyad.png',
+    price: 80, weight: '50 جم',
   },
   {
     name: 'ثوم بودرة',
@@ -54,6 +60,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-stone-100 to-stone-200',
     textColor: 'text-stone-700',
     image: '/images/products/thoum.png',
+    price: 32, weight: '70 جم',
   },
   {
     name: 'بصل بودر',
@@ -61,6 +68,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-amber-50 to-yellow-100',
     textColor: 'text-amber-700',
     image: '/images/products/basal.png',
+    price: 32, weight: '50 جم',
   },
   {
     name: 'كزبرة',
@@ -68,6 +76,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-green-50 to-green-100',
     textColor: 'text-green-700',
     image: '/images/products/kozabra.png',
+    price: 26, weight: '50 جم',
   },
   {
     name: 'قرفة',
@@ -75,6 +84,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-orange-100 to-red-100',
     textColor: 'text-orange-900',
     image: null,
+    price: 46, weight: '50 جم',
   },
   {
     name: 'زعتر',
@@ -82,6 +92,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-green-100 to-emerald-200',
     textColor: 'text-green-800',
     image: '/images/products/zaatar.png',
+    price: 29, weight: '25 جم',
   },
   {
     name: 'حبة البركة',
@@ -89,6 +100,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-gray-200 to-gray-300',
     textColor: 'text-gray-800',
     image: '/images/products/habba.png',
+    price: 38, weight: '50 جم',
   },
   {
     name: 'بابريكا مدخنة',
@@ -96,6 +108,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-red-100 to-orange-200',
     textColor: 'text-red-900',
     image: '/images/products/babrika.png',
+    price: 40, weight: '50 جم',
   },
   {
     name: 'بهارات بطاطس',
@@ -103,6 +116,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-yellow-50 to-amber-100',
     textColor: 'text-yellow-900',
     image: '/images/products/baharat-batatas.png',
+    price: 33, weight: '50 جم',
   },
   {
     name: 'مرقة دجاج',
@@ -110,6 +124,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-yellow-100 to-amber-200',
     textColor: 'text-yellow-800',
     image: '/images/products/moraka-farkh.png',
+    price: 30, weight: '70 جم',
   },
   {
     name: 'مرقة لحم',
@@ -117,6 +132,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-amber-100 to-brown-200',
     textColor: 'text-amber-900',
     image: '/images/products/moraka-lahm.png',
+    price: 29, weight: '70 جم',
   },
   {
     name: 'محاشي',
@@ -124,6 +140,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-lime-50 to-green-100',
     textColor: 'text-lime-800',
     image: null,
+    price: 29, weight: '50 جم',
   },
   {
     name: 'مشاوي',
@@ -131,6 +148,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-orange-100 to-red-200',
     textColor: 'text-red-800',
     image: null,
+    price: 32, weight: '50 جم',
   },
   {
     name: 'كبدة',
@@ -138,6 +156,7 @@ const PRODUCTS = [
     bg: 'bg-gradient-to-br from-red-50 to-rose-100',
     textColor: 'text-rose-800',
     image: null,
+    price: 31, weight: '50 جم',
   },
 ]
 
@@ -235,12 +254,16 @@ export default function Products() {
 
               {/* Info */}
               <div className="p-4">
-                <h3 className="font-display font-bold text-base sm:text-lg text-foreground mb-1">
-                  {product.name}
-                </h3>
-                <p className="text-xs sm:text-sm text-muted leading-relaxed">
-                  {product.desc}
-                </p>
+                <div className="flex items-start justify-between gap-2 mb-1">
+                  <h3 className="font-display font-bold text-base sm:text-lg text-foreground">
+                    {product.name}
+                  </h3>
+                  <span className="shrink-0 font-black text-base text-primary" dir="ltr">
+                    {product.price} ج
+                  </span>
+                </div>
+                <p className="text-xs sm:text-sm text-muted leading-relaxed">{product.desc}</p>
+                <p className="text-xs text-muted/60 mt-1">{product.weight}</p>
               </div>
             </motion.div>
           ))}
