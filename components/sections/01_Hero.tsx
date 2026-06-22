@@ -107,7 +107,7 @@ export default function Hero() {
         >
           {[
             { value: '+59K', label: 'متابع' },
-            { value: '+8', label: 'منتج' },
+            { value: '+19', label: 'منتج' },
             { value: '100%', label: 'طبيعي' },
           ].map((stat) => (
             <div key={stat.label} className="flex flex-col items-center gap-1">
