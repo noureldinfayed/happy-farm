@@ -300,11 +300,17 @@ export default function Order() {
                   )}
                 </button>
 
-                <p className="text-center text-xs text-muted leading-relaxed">
-                  بعد إرسال الطلب، ابعت العربون على فودافون كاش{' '}
-                  <span className="font-bold text-foreground" dir="ltr">{VODAFONE_NUMBER}</span>{' '}
-                  وابعتلنا صورة الإيصال على واتساب.
-                </p>
+                <div className="bg-red-50 border-2 border-red-200 rounded-2xl px-5 py-4 flex flex-col items-center gap-2 text-center">
+                  <p className="text-red-700 font-bold text-sm">
+                    ⚠️ بعد إرسال الطلب، ابعت العربون على فودافون كاش:
+                  </p>
+                  <span className="font-display font-black text-2xl text-red-600 tracking-widest" dir="ltr">
+                    {VODAFONE_NUMBER}
+                  </span>
+                  <p className="text-red-600 text-xs font-semibold">
+                    وابعتلنا صورة الإيصال على واتساب لتأكيد الطلب
+                  </p>
+                </div>
               </motion.form>
             )}
           </AnimatePresence>
