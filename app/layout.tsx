@@ -24,11 +24,25 @@ export const metadata: Metadata = {
     template: '%s | هابي فارم',
   },
   description: 'هابي فارم — بهارات ومنتجات عضوية طبيعية 100%. اطلب الآن بأفضل الأسعار بالجملة.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://happy-farm.store'),
   openGraph: {
     type: 'website',
     locale: 'ar_EG',
     siteName: 'هابي فارم',
+    title: 'هابي فارم | منتجات عضوية طبيعية',
+    description: 'هابي فارم — بهارات ومنتجات عضوية طبيعية 100%. اطلب الآن بأفضل الأسعار بالجملة.',
+    images: [
+      {
+        url: '/images/og-image.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'هابي فارم — منتجات عضوية طبيعية',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: ['/images/og-image.jpg'],
   },
   robots: { index: true, follow: true },
 }

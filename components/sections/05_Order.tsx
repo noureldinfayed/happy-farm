@@ -232,7 +232,7 @@ export default function Order() {
                 {/* Products checkboxes */}
                 <div>
                   <label className={labelCls}>المنتجات المطلوبة * (يمكن اختيار أكثر من منتج)</label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-2.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
                     {PRODUCTS.map((p) => {
                       const checked = form.products.includes(p)
                       return (

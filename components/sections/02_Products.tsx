@@ -18,56 +18,56 @@ const PRODUCTS = [
     desc: 'حرارة طبيعية تلهّب النكهة على السفرة',
     bg: 'bg-gradient-to-br from-red-100 to-red-200',
     textColor: 'text-red-800',
-    image: null,
+    image: '/images/products/shata.jpg',
   },
   {
     name: 'كمون',
     desc: 'النكهة الأصيلة في قلب كل أكلة مصرية',
     bg: 'bg-gradient-to-br from-yellow-100 to-amber-200',
     textColor: 'text-yellow-800',
-    image: null,
+    image: '/images/products/kamoun.jpg',
   },
   {
     name: 'بهارات 7',
     desc: 'خلطة متوازنة من سبع بهارات طبيعية مختارة',
     bg: 'bg-gradient-to-br from-orange-100 to-amber-200',
     textColor: 'text-orange-800',
-    image: null,
+    image: '/images/products/baharat7.jpg',
   },
   {
     name: 'فلفل أسمر',
     desc: 'نكهة حارة قوية تناسب اللحوم والمشويات',
     bg: 'bg-gradient-to-br from-stone-200 to-stone-300',
     textColor: 'text-stone-800',
-    image: null,
+    image: '/images/products/felfel-asmar.jpg',
   },
   {
     name: 'فلفل أبيض',
     desc: 'حدة ناعمة تناسب أشهى الأطباق البيضاء',
     bg: 'bg-gradient-to-br from-slate-50 to-gray-100',
     textColor: 'text-slate-700',
-    image: null,
+    image: '/images/products/felfel-abyad.jpg',
   },
   {
     name: 'ثوم بودرة',
     desc: 'نكهة الثوم الطازج في شكل مريح ومركز',
     bg: 'bg-gradient-to-br from-stone-100 to-stone-200',
     textColor: 'text-stone-700',
-    image: null,
+    image: '/images/products/thoum.jpg',
   },
   {
     name: 'بصل بودر',
     desc: 'بصل مجفف بعناية للحفاظ على نكهته الكاملة',
     bg: 'bg-gradient-to-br from-amber-50 to-yellow-100',
     textColor: 'text-amber-700',
-    image: null,
+    image: '/images/products/basal.jpg',
   },
   {
     name: 'كزبرة',
     desc: 'نكهة عطرية خفيفة تكمل كل طبق مصري',
     bg: 'bg-gradient-to-br from-green-50 to-green-100',
     textColor: 'text-green-700',
-    image: null,
+    image: '/images/products/kozabra.jpg',
   },
   {
     name: 'قرفة',
@@ -81,28 +81,28 @@ const PRODUCTS = [
     desc: 'عطر البرية الأصيل على مائدتك',
     bg: 'bg-gradient-to-br from-green-100 to-emerald-200',
     textColor: 'text-green-800',
-    image: null,
+    image: '/images/products/zaatar.jpg',
   },
   {
     name: 'حبة البركة',
     desc: 'بركة في طعمها وفائدتها الطبيعية',
     bg: 'bg-gradient-to-br from-gray-200 to-gray-300',
     textColor: 'text-gray-800',
-    image: null,
+    image: '/images/products/habba.jpg',
   },
   {
     name: 'بابريكا مدخنة',
     desc: 'عمق النكهة المدخنة في كل لقمة',
     bg: 'bg-gradient-to-br from-red-100 to-orange-200',
     textColor: 'text-red-900',
-    image: null,
+    image: '/images/products/babrika.jpg',
   },
   {
     name: 'بهارات بطاطس',
     desc: 'خلطة مميزة خصيصاً لتتبيل البطاطس',
     bg: 'bg-gradient-to-br from-yellow-50 to-amber-100',
     textColor: 'text-yellow-900',
-    image: null,
+    image: '/images/products/baharat-batatas.jpg',
   },
   {
     name: 'مرقة دجاج',
@@ -116,7 +116,7 @@ const PRODUCTS = [
     desc: 'مرقة اللحم الغنية لأشهى الأطباق الشرقية',
     bg: 'bg-gradient-to-br from-amber-100 to-brown-200',
     textColor: 'text-amber-900',
-    image: null,
+    image: '/images/products/moraka-lahm.jpg',
   },
   {
     name: 'محاشي',
@@ -202,13 +202,13 @@ export default function Products() {
               className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
             >
               {/* Image or branded placeholder */}
-              <div className={`relative h-44 sm:h-52 overflow-hidden ${!product.image ? product.bg : ''}`}>
+              <div className={`relative h-44 sm:h-52 overflow-hidden ${!product.image ? product.bg : 'bg-white'}`}>
                 {product.image ? (
                   <Image
                     src={product.image}
                     alt={product.name}
                     fill
-                    className="object-cover"
+                    className="object-contain object-center p-3"
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                   />
                 ) : (
