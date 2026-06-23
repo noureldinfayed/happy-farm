@@ -4,6 +4,8 @@ import { useRef } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 import { fadeUpVariant } from '@/lib/animations'
+import { Minus, Plus } from 'lucide-react'
+import { useCart } from '@/lib/cart-context'
 
 const PRODUCTS = [
   {
@@ -163,6 +165,8 @@ const PRODUCTS = [
 export default function Products() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
+  const { items, setQty } = useCart()
+  const totalInCart = Object.values(items).reduce((a, b) => a + b, 0)
 
   return (
     <section id="products" ref={ref} className="py-20 md:py-28 bg-background">
@@ -210,63 +214,88 @@ export default function Products() {
 
         {/* Product cards */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-          {PRODUCTS.map((product, i) => (
-            <motion.div
-              key={product.name}
-              variants={fadeUpVariant}
-              initial="hidden"
-              animate={isInView ? 'visible' : 'hidden'}
-              transition={{ delay: 0.15 + i * 0.07 }}
-              whileHover={{ scale: 1.02, y: -4 }}
-              className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300"
-            >
-              {/* Image or branded placeholder */}
-              <div className={`relative h-44 sm:h-52 overflow-hidden ${!product.image ? product.bg : 'bg-[#FAF7F0]'}`}>
-                {product.image ? (
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    fill
-                    className="object-contain object-center p-4"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                  />
-                ) : (
-                  /* Branded jar-style placeholder */
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4">
-                    {/* Jar shape */}
-                    <div className="relative w-20 h-24 flex flex-col items-center justify-center">
-                      {/* Jar body */}
-                      <div className="absolute inset-0 bg-[#111] rounded-xl opacity-90" />
-                      {/* Jar lid */}
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-3 bg-[#222] rounded-t-md" />
-                      {/* Label */}
-                      <div className="relative z-10 flex flex-col items-center gap-0.5 px-2">
-                        <span className="text-[#1E6B3C] text-[7px] font-bold tracking-wider leading-none">HAPPY FARM</span>
-                        <div className="w-full h-px bg-[#1E6B3C]/40 my-0.5" />
-                        <span className={`font-display font-black text-sm text-white leading-tight text-center`}>
-                          {product.name}
-                        </span>
+          {PRODUCTS.map((product, i) => {
+            const qty = items[product.name] ?? 0
+            return (
+              <motion.div
+                key={product.name}
+                variants={fadeUpVariant}
+                initial="hidden"
+                animate={isInView ? 'visible' : 'hidden'}
+                transition={{ delay: 0.15 + i * 0.07 }}
+                className={`group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 ${qty > 0 ? 'ring-2 ring-primary' : ''}`}
+              >
+                {/* Image or branded placeholder */}
+                <div className={`relative h-44 sm:h-52 overflow-hidden ${!product.image ? product.bg : 'bg-[#FAF7F0]'}`}>
+                  {product.image ? (
+                    <Image
+                      src={product.image}
+                      alt={product.name}
+                      fill
+                      className="object-contain object-center p-4"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4">
+                      <div className="relative w-20 h-24 flex flex-col items-center justify-center">
+                        <div className="absolute inset-0 bg-[#111] rounded-xl opacity-90" />
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-12 h-3 bg-[#222] rounded-t-md" />
+                        <div className="relative z-10 flex flex-col items-center gap-0.5 px-2">
+                          <span className="text-[#1E6B3C] text-[7px] font-bold tracking-wider leading-none">HAPPY FARM</span>
+                          <div className="w-full h-px bg-[#1E6B3C]/40 my-0.5" />
+                          <span className="font-display font-black text-sm text-white leading-tight text-center">
+                            {product.name}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="p-4">
-                <div className="flex items-start justify-between gap-2 mb-1">
-                  <h3 className="font-display font-bold text-base sm:text-lg text-foreground">
-                    {product.name}
-                  </h3>
-                  <span className="shrink-0 font-black text-base text-primary" dir="ltr">
-                    {product.price} ج
-                  </span>
+                  )}
+                  {/* Cart badge */}
+                  {qty > 0 && (
+                    <div className="absolute top-2 start-2 w-6 h-6 rounded-full bg-primary text-white text-xs font-black flex items-center justify-center shadow-md">
+                      {qty}
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-muted leading-relaxed">{product.desc}</p>
-                <p className="text-xs text-muted/60 mt-1">{product.weight}</p>
-              </div>
-            </motion.div>
-          ))}
+
+                {/* Info */}
+                <div className="p-3 sm:p-4">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="font-display font-bold text-base sm:text-lg text-foreground">
+                      {product.name}
+                    </h3>
+                    <span className="shrink-0 font-black text-base text-primary" dir="ltr">
+                      {product.price} ج
+                    </span>
+                  </div>
+                  <p className="text-xs sm:text-sm text-muted leading-relaxed">{product.desc}</p>
+                  <p className="text-xs text-muted/60 mt-1 mb-3">{product.weight}</p>
+
+                  {/* +/- controls */}
+                  <div className="flex items-center justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setQty(product.name, -1)}
+                      disabled={qty === 0}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border-2 border-gray-200 text-muted disabled:opacity-30 hover:border-primary hover:text-primary transition-colors active:scale-90"
+                    >
+                      <Minus size={13} />
+                    </button>
+                    <span className={`text-sm font-black tabular-nums w-6 text-center ${qty > 0 ? 'text-primary' : 'text-muted'}`}>
+                      {qty}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setQty(product.name, 1)}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border-2 border-gray-200 text-muted hover:border-primary hover:text-primary transition-colors active:scale-90"
+                    >
+                      <Plus size={13} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
         </div>
 
         {/* CTA */}
@@ -279,9 +308,14 @@ export default function Products() {
         >
           <a
             href="#order"
-            className="inline-flex items-center justify-center px-8 py-4 rounded-full bg-primary text-white font-bold text-base hover:opacity-90 active:scale-95 transition-all duration-200 shadow-lg shadow-primary/30"
+            className="inline-flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-primary text-white font-bold text-base hover:opacity-90 active:scale-95 transition-all duration-200 shadow-lg shadow-primary/30"
           >
-            اطلب منتجاتك الآن
+            اطلب منتجاتنا الآن
+            {totalInCart > 0 && (
+              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white text-primary text-xs font-black">
+                {totalInCart}
+              </span>
+            )}
           </a>
         </motion.div>
       </div>

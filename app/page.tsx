@@ -5,10 +5,11 @@ import Products from '@/components/sections/02_Products'
 import HowToOrder from '@/components/sections/03_HowToOrder'
 import About from '@/components/sections/04_About'
 import Order from '@/components/sections/05_Order'
+import { CartProvider } from '@/lib/cart-context'
 
 export default function Page() {
   return (
-    <>
+    <CartProvider>
       <Navbar />
       <main>
         <Hero />
@@ -18,6 +19,6 @@ export default function Page() {
         <Order />
       </main>
       <Footer />
-    </>
+    </CartProvider>
   )
 }

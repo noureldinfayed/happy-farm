@@ -4,6 +4,7 @@ import { useRef, useState } from 'react'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { fadeUpVariant } from '@/lib/animations'
 import { CheckCircle, Loader2, Minus, Plus } from 'lucide-react'
+import { useCart } from '@/lib/cart-context'
 
 const PRODUCTS: { name: string; price: number; weight: string }[] = [
   { name: 'كركم',          price: 36, weight: '50 جم' },
@@ -33,34 +34,24 @@ const VODAFONE_NUMBER = '01556662920'
 interface FormState {
   name: string
   phone: string
-  items: Record<string, number>
   notes: string
 }
 
-const EMPTY: FormState = { name: '', phone: '', items: {}, notes: '' }
+const EMPTY: FormState = { name: '', phone: '', notes: '' }
 
 export default function Order() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true, margin: '-80px' })
 
+  const { items, setQty, clearCart } = useCart()
   const [form, setForm] = useState<FormState>(EMPTY)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
-  const totalBottles = Object.values(form.items).reduce((a, b) => a + b, 0)
-  const totalPrice = PRODUCTS.reduce((sum, p) => sum + (form.items[p.name] ?? 0) * p.price, 0)
+  const totalBottles = Object.values(items).reduce((a, b) => a + b, 0)
+  const totalPrice = PRODUCTS.reduce((sum, p) => sum + (items[p.name] ?? 0) * p.price, 0)
   const progressPct = Math.min((totalBottles / MIN_BOTTLES) * 100, 100)
   const reachedMin = totalBottles >= MIN_BOTTLES
-
-  const setQty = (product: string, delta: number) => {
-    setForm((f) => {
-      const next = Math.max(0, (f.items[product] ?? 0) + delta)
-      const items = { ...f.items }
-      if (next === 0) delete items[product]
-      else items[product] = next
-      return { ...f, items }
-    })
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -75,7 +66,7 @@ export default function Order() {
     setErrorMsg('')
     setStatus('loading')
 
-    const products = Object.entries(form.items)
+    const products = Object.entries(items)
       .filter(([, qty]) => qty > 0)
       .map(([name, qty]) => `${name} × ${qty}`)
 
@@ -96,6 +87,7 @@ export default function Order() {
       if (!res.ok) throw new Error('server error')
       setStatus('success')
       setForm(EMPTY)
+      clearCart()
     } catch {
       setStatus('error')
       setErrorMsg('حصل خطأ. حاول تاني أو تواصل معنا على واتساب.')
@@ -234,7 +226,7 @@ export default function Order() {
                   <label className={labelCls}>اختار المنتجات وكميتها *</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {PRODUCTS.map((p) => {
-                      const qty = form.items[p.name] ?? 0
+                      const qty = items[p.name] ?? 0
                       return (
                         <div key={p.name} className={`flex items-center justify-between px-4 py-3 rounded-xl border-2 transition-all duration-200 ${qty > 0 ? 'border-primary bg-primary/5' : 'border-gray-200 bg-white'}`}>
                           <div className="flex flex-col min-w-0">
