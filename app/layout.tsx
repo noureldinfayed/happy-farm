@@ -90,6 +90,10 @@ export const metadata: Metadata = {
     },
   },
 
+  verification: {
+    google: 'kOd8TY-CKb-2vgFlQUEF8_O0GZqhGHicP2XdRNQlCB8',
+  },
+
   other: {
     'geo.region': 'EG-ALX',
     'geo.placename': 'Alexandria, Egypt',
