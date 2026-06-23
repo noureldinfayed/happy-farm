@@ -28,8 +28,9 @@ const PRODUCTS: { name: string; price: number; weight: string }[] = [
   { name: 'كبدة',          price: 31, weight: '50 جم' },
 ]
 
-const MIN_BOTTLES = 6
-const VODAFONE_NUMBER = '01556662920'
+const FREE_SHIPPING_AT = 6
+const SHIPPING_FEE = 30
+const VODAFONE_NUMBER = '01003815160'
 
 interface FormState {
   name: string
@@ -49,9 +50,11 @@ export default function Order() {
   const [errorMsg, setErrorMsg] = useState('')
 
   const totalBottles = Object.values(items).reduce((a, b) => a + b, 0)
-  const totalPrice = PRODUCTS.reduce((sum, p) => sum + (items[p.name] ?? 0) * p.price, 0)
-  const progressPct = Math.min((totalBottles / MIN_BOTTLES) * 100, 100)
-  const reachedMin = totalBottles >= MIN_BOTTLES
+  const productTotal = PRODUCTS.reduce((sum, p) => sum + (items[p.name] ?? 0) * p.price, 0)
+  const freeShipping = totalBottles >= FREE_SHIPPING_AT
+  const shipping = totalBottles > 0 && !freeShipping ? SHIPPING_FEE : 0
+  const totalPrice = productTotal + shipping
+  const progressPct = Math.min((totalBottles / FREE_SHIPPING_AT) * 100, 100)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -59,8 +62,8 @@ export default function Order() {
       setErrorMsg('من فضلك اكمل الاسم ورقم الواتساب.')
       return
     }
-    if (totalBottles < MIN_BOTTLES) {
-      setErrorMsg(`الحد الأدنى للطلب ${MIN_BOTTLES} زجاجات.`)
+    if (totalBottles === 0) {
+      setErrorMsg('من فضلك اختار منتج واحد على الأقل.')
       return
     }
     setErrorMsg('')
@@ -81,6 +84,7 @@ export default function Order() {
           products,
           quantity: `${totalBottles} زجاجة`,
           notes: form.notes,
+          shipping,
           total: totalPrice,
         }),
       })
@@ -115,8 +119,13 @@ export default function Order() {
           <p className="mt-4 text-muted text-base sm:text-lg max-w-xl leading-relaxed mx-auto">
             اختار منتجاتك واملأ بياناتك وهنوصلك على طول
           </p>
-          <div className="mt-4 inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200">
-            🚚 توصيل داخل الإسكندرية فقط
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200">
+              🚚 توصيل داخل الإسكندرية فقط
+            </div>
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-2 rounded-full border border-primary/20">
+              🎉 توصيل مجاني من 6 زجاجات
+            </div>
           </div>
         </motion.div>
 
@@ -192,12 +201,12 @@ export default function Order() {
                   </div>
                 </div>
 
-                {/* Progress bar */}
+                {/* Progress bar + price summary */}
                 <div className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">عدد الزجاجات</span>
-                    <span className={`text-sm font-black tabular-nums transition-colors ${reachedMin ? 'text-green-600' : 'text-muted'}`}>
-                      {totalBottles} / {MIN_BOTTLES}
+                    <span className="text-sm font-bold text-foreground">توصيل مجاني من 6 زجاجات</span>
+                    <span className={`text-sm font-black tabular-nums transition-colors ${freeShipping ? 'text-green-600' : 'text-muted'}`}>
+                      {totalBottles} / {FREE_SHIPPING_AT}
                     </span>
                   </div>
                   <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -207,18 +216,35 @@ export default function Order() {
                       transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                     />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs transition-colors" style={{ color: reachedMin ? '#16a34a' : '#9ca3af' }}>
-                      {reachedMin
-                        ? '✅ ممتاز! يمكنك إتمام الطلب'
-                        : `محتاج ${MIN_BOTTLES - totalBottles} زجاجة أكتر`}
-                    </p>
-                    {totalPrice > 0 && (
-                      <span className="text-sm font-black text-primary" dir="ltr">
-                        {totalPrice} جنيه
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-xs transition-colors" style={{ color: freeShipping ? '#16a34a' : '#9ca3af' }}>
+                    {freeShipping
+                      ? '✅ توصيل مجاني!'
+                      : totalBottles > 0
+                        ? `أضف ${FREE_SHIPPING_AT - totalBottles} زجاجة أكتر للتوصيل المجاني`
+                        : 'اختار منتجاتك'}
+                  </p>
+
+                  {/* Price breakdown */}
+                  {totalBottles > 0 && (
+                    <div className="border-t border-gray-200 pt-3 flex flex-col gap-1.5">
+                      <div className="flex items-center justify-between text-sm text-muted">
+                        <span>المنتجات ({totalBottles} زجاجة)</span>
+                        <span dir="ltr" className="font-semibold">{productTotal} جنيه</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className={freeShipping ? 'text-green-600 font-semibold' : 'text-muted'}>
+                          {freeShipping ? '🎉 توصيل مجاني' : 'رسوم التوصيل'}
+                        </span>
+                        <span dir="ltr" className={`font-semibold ${freeShipping ? 'text-green-600' : 'text-muted'}`}>
+                          {freeShipping ? 'مجاني' : `${SHIPPING_FEE} جنيه`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-base font-black text-foreground border-t border-gray-200 pt-1.5 mt-0.5">
+                        <span>الإجمالي</span>
+                        <span dir="ltr" className="text-primary">{totalPrice} جنيه</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Products +/- */}
@@ -268,7 +294,7 @@ export default function Order() {
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={status === 'loading' || !reachedMin}
+                  disabled={status === 'loading' || totalBottles === 0}
                   className="w-full h-14 rounded-full bg-primary text-white font-display font-bold text-lg hover:opacity-90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/30 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {status === 'loading' ? (

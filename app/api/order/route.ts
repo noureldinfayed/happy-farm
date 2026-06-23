@@ -14,7 +14,7 @@ function buildTransport() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { name, phone, governorate, products, quantity, notes, total } = body
+    const { name, phone, governorate, products, quantity, notes, shipping, total } = body
 
     if (!name || !phone || !products?.length) {
       return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
@@ -54,10 +54,14 @@ export async function POST(req: NextRequest) {
               <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">عدد الزجاجات</td>
               <td style="padding: 10px 12px; background: #f0f4f0; font-size: 14px;">${quantity || 'غير محدد'}</td>
             </tr>
+            <tr>
+              <td style="padding: 10px 12px; font-weight: bold; color: #1E6B3C; font-size: 13px; border-bottom: 1px solid #e8ede8;">التوصيل</td>
+              <td style="padding: 10px 12px; font-size: 14px; border-bottom: 1px solid #e8ede8; color: ${shipping === 0 ? '#16a34a' : '#374151'};">${shipping === 0 ? '🎉 مجاني' : `${shipping} جنيه`}</td>
+            </tr>
             ${total ? `
             <tr>
-              <td style="padding: 10px 12px; font-weight: bold; color: #1E6B3C; font-size: 13px; border-bottom: 1px solid #e8ede8;">إجمالي الطلب</td>
-              <td style="padding: 10px 12px; font-size: 15px; font-weight: bold; color: #1E6B3C; border-bottom: 1px solid #e8ede8;">${total} جنيه</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-weight: bold; color: #1E6B3C; font-size: 13px;">إجمالي الطلب</td>
+              <td style="padding: 10px 12px; background: #f0f4f0; font-size: 16px; font-weight: bold; color: #1E6B3C;">${total} جنيه</td>
             </tr>
             ` : ''}
             ${notes ? `
