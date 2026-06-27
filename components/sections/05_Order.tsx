@@ -28,17 +28,17 @@ const PRODUCTS: { name: string; price: number; weight: string }[] = [
   { name: 'كبدة',          price: 31, weight: '50 جم' },
 ]
 
-const FREE_SHIPPING_AT = 6
-const SHIPPING_FEE = 30
+const FREE_SHIPPING_AT = 12
 const VODAFONE_NUMBER = '01003815160'
 
 interface FormState {
   name: string
   phone: string
+  governorate: 'alexandria' | 'other'
   notes: string
 }
 
-const EMPTY: FormState = { name: '', phone: '', notes: '' }
+const EMPTY: FormState = { name: '', phone: '', governorate: 'alexandria', notes: '' }
 
 export default function Order() {
   const ref = useRef<HTMLDivElement>(null)
@@ -51,8 +51,9 @@ export default function Order() {
 
   const totalBottles = Object.values(items).reduce((a, b) => a + b, 0)
   const productTotal = PRODUCTS.reduce((sum, p) => sum + (items[p.name] ?? 0) * p.price, 0)
+  const shippingFee = form.governorate === 'alexandria' ? 30 : 70
   const freeShipping = totalBottles >= FREE_SHIPPING_AT
-  const shipping = totalBottles > 0 && !freeShipping ? SHIPPING_FEE : 0
+  const shipping = totalBottles > 0 && !freeShipping ? shippingFee : 0
   const totalPrice = productTotal + shipping
   const progressPct = Math.min((totalBottles / FREE_SHIPPING_AT) * 100, 100)
 
@@ -80,7 +81,7 @@ export default function Order() {
         body: JSON.stringify({
           name: form.name,
           phone: form.phone,
-          governorate: 'الإسكندرية',
+          governorate: form.governorate === 'alexandria' ? 'الإسكندرية' : 'محافظات أخرى',
           products,
           quantity: `${totalBottles} زجاجة`,
           notes: form.notes,
@@ -121,10 +122,10 @@ export default function Order() {
           </p>
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200">
-              🚚 توصيل داخل الإسكندرية فقط
+              🚚 توصيل لجميع المحافظات
             </div>
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-2 rounded-full border border-primary/20">
-              🎉 توصيل مجاني من 6 زجاجات
+              🎉 توصيل مجاني من {FREE_SHIPPING_AT} زجاجة
             </div>
           </div>
         </motion.div>
@@ -201,6 +202,18 @@ export default function Order() {
                   </div>
                 </div>
 
+                <div>
+                  <label className={labelCls}>المحافظة *</label>
+                  <select 
+                    className={inputCls} 
+                    value={form.governorate} 
+                    onChange={(e) => setForm(f => ({ ...f, governorate: e.target.value as 'alexandria' | 'other' }))}
+                  >
+                    <option value="alexandria">الإسكندرية (شحن 30 جنيه)</option>
+                    <option value="other">محافظات أخرى (شحن 70 جنيه)</option>
+                  </select>
+                </div>
+
                 {/* Progress bar + price summary */}
                 <div className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
@@ -236,7 +249,7 @@ export default function Order() {
                           {freeShipping ? '🎉 توصيل مجاني' : 'رسوم التوصيل'}
                         </span>
                         <span dir="ltr" className={`font-semibold ${freeShipping ? 'text-green-600' : 'text-muted'}`}>
-                          {freeShipping ? 'مجاني' : `${SHIPPING_FEE} جنيه`}
+                          {freeShipping ? 'مجاني' : `${shippingFee} جنيه`}
                         </span>
                       </div>
                       <div className="flex items-center justify-between text-base font-black text-foreground border-t border-gray-200 pt-1.5 mt-0.5">
