@@ -10,8 +10,31 @@ export default function Hero() {
   const ref = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
+  const hasInteracted = useRef(false)
   const [isMuted, setIsMuted] = useState(false)
   const isInView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    const handleInteraction = () => {
+      if (!hasInteracted.current) {
+        hasInteracted.current = true
+        setIsMuted(false)
+        if (audioRef.current) {
+          audioRef.current.play().catch(() => {})
+        }
+      }
+    }
+
+    window.addEventListener('click', handleInteraction, { once: true })
+    window.addEventListener('scroll', handleInteraction, { once: true })
+    window.addEventListener('touchstart', handleInteraction, { once: true })
+
+    return () => {
+      window.removeEventListener('click', handleInteraction)
+      window.removeEventListener('scroll', handleInteraction)
+      window.removeEventListener('touchstart', handleInteraction)
+    }
+  }, [])
 
   useEffect(() => {
     const video = videoRef.current
@@ -37,6 +60,7 @@ export default function Hero() {
   }, [isMuted])
 
   const toggleMute = () => {
+    hasInteracted.current = true // Prevent global listener from overriding
     setIsMuted(!isMuted)
     if (audioRef.current) {
       if (isMuted) {
