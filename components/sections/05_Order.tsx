@@ -28,7 +28,6 @@ const PRODUCTS: { name: string; price: number; weight: string }[] = [
   { name: 'كبدة',          price: 31, weight: '50 جم' },
 ]
 
-const FREE_SHIPPING_AT = 12
 const VODAFONE_NUMBER = '01003815160'
 
 interface FormState {
@@ -52,10 +51,11 @@ export default function Order() {
   const totalBottles = Object.values(items).reduce((a, b) => a + b, 0)
   const productTotal = PRODUCTS.reduce((sum, p) => sum + (items[p.name] ?? 0) * p.price, 0)
   const shippingFee = form.governorate === 'alexandria' ? 30 : 70
-  const freeShipping = totalBottles >= FREE_SHIPPING_AT
+  const freeShippingAt = form.governorate === 'alexandria' ? 6 : 12
+  const freeShipping = totalBottles >= freeShippingAt
   const shipping = totalBottles > 0 && !freeShipping ? shippingFee : 0
   const totalPrice = productTotal + shipping
-  const progressPct = Math.min((totalBottles / FREE_SHIPPING_AT) * 100, 100)
+  const progressPct = Math.min((totalBottles / freeShippingAt) * 100, 100)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,7 +125,7 @@ export default function Order() {
               🚚 توصيل لجميع المحافظات
             </div>
             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary text-sm font-semibold px-4 py-2 rounded-full border border-primary/20">
-              🎉 توصيل مجاني من {FREE_SHIPPING_AT} زجاجة
+              🎉 توصيل مجاني من 6 زجاجات (الإسكندرية) أو 12 (للمحافظات)
             </div>
           </div>
         </motion.div>
@@ -217,9 +217,9 @@ export default function Order() {
                 {/* Progress bar + price summary */}
                 <div className="bg-gray-50 rounded-2xl p-4 flex flex-col gap-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">توصيل مجاني من 6 زجاجات</span>
+                    <span className="text-sm font-bold text-foreground">توصيل مجاني من {freeShippingAt} زجاجات</span>
                     <span className={`text-sm font-black tabular-nums transition-colors ${freeShipping ? 'text-green-600' : 'text-muted'}`}>
-                      {totalBottles} / {FREE_SHIPPING_AT}
+                      {totalBottles} / {freeShippingAt}
                     </span>
                   </div>
                   <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
@@ -233,7 +233,7 @@ export default function Order() {
                     {freeShipping
                       ? '✅ توصيل مجاني!'
                       : totalBottles > 0
-                        ? `أضف ${FREE_SHIPPING_AT - totalBottles} زجاجة أكتر للتوصيل المجاني`
+                        ? `أضف ${freeShippingAt - totalBottles} زجاجة أكتر للتوصيل المجاني`
                         : 'اختار منتجاتك'}
                   </p>
 
