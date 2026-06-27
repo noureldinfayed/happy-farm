@@ -63,6 +63,10 @@ export default function Order() {
       setErrorMsg('من فضلك اكمل الاسم ورقم الواتساب.')
       return
     }
+    if (!form.notes.trim()) {
+      setErrorMsg('من فضلك اكتب عنوانك بالتفصيل عشان نعرف نوصلك.')
+      return
+    }
     if (totalBottles === 0) {
       setErrorMsg('من فضلك اختار منتج واحد على الأقل.')
       return
@@ -289,10 +293,10 @@ export default function Order() {
                   </div>
                 </div>
 
-                {/* Notes */}
+                {/* Address/Notes */}
                 <div>
-                  <label className={labelCls}>عنوانك + أي ملاحظات</label>
-                  <textarea rows={3} placeholder="عنوانك بالتفصيل في الإسكندرية، أو أي طلبات إضافية..."
+                  <label className={labelCls}>عنوانك بالتفصيل *</label>
+                  <textarea rows={3} placeholder="اكتب عنوانك هنا بالتفصيل (رقم العمارة، الشارع، المنطقة)..."
                     className={`${inputCls} resize-none`}
                     value={form.notes} onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))} />
                 </div>
