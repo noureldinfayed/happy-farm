@@ -53,7 +53,7 @@ const PRODUCTS = [
     desc: 'حدة ناعمة تناسب أشهى الأطباق البيضاء',
     bg: 'bg-gradient-to-br from-slate-50 to-gray-100',
     textColor: 'text-slate-700',
-    image: '/images/products/felfel-abyad.png',
+    image: '/images/products/felfel-abyad.jpg',
     price: 80, weight: '50 جم',
   },
   {
@@ -85,7 +85,7 @@ const PRODUCTS = [
     desc: 'حلاوة طبيعية للحلويات والأطباق الشرقية',
     bg: 'bg-gradient-to-br from-orange-100 to-red-100',
     textColor: 'text-orange-900',
-    image: null,
+    image: '/images/products/kerfa.jpg',
     price: 46, weight: '50 جم',
   },
   {
@@ -157,7 +157,7 @@ const PRODUCTS = [
     desc: 'البهارة الأصح لتتبيل الكبدة الإسكندراني',
     bg: 'bg-gradient-to-br from-red-50 to-rose-100',
     textColor: 'text-rose-800',
-    image: null,
+    image: '/images/products/kebda.jpg',
     price: 31, weight: '50 جم',
   },
 ]
