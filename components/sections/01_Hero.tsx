@@ -102,7 +102,7 @@ export default function Hero() {
         {/* Dark gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/80" />
         <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />
-        <audio ref={audioRef} src="/images/hero-sfx.mp3?v=mixed" loop />
+        <audio ref={audioRef} src="/images/hero-sfx.mp3?v=fixed2" loop />
       </div>
 
       {/* Content — use flex col + items-center for reliable RTL centering */}
