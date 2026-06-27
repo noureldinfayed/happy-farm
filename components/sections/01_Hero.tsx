@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
 import { fadeUpVariant } from '@/lib/animations'
@@ -8,7 +8,45 @@ import WordReveal from '@/components/ui/WordReveal'
 
 export default function Hero() {
   const ref = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [isMuted, setIsMuted] = useState(false)
   const isInView = useInView(ref, { once: true })
+
+  useEffect(() => {
+    const video = videoRef.current
+    const audio = audioRef.current
+    
+    if (video && audio) {
+      const handlePlay = () => {
+        if (!isMuted) audio.play().catch(() => setIsMuted(true))
+      }
+      const handlePause = () => audio.pause()
+      const handleSeeked = () => { audio.currentTime = video.currentTime }
+      
+      video.addEventListener('play', handlePlay)
+      video.addEventListener('pause', handlePause)
+      video.addEventListener('seeked', handleSeeked)
+      
+      return () => {
+        video.removeEventListener('play', handlePlay)
+        video.removeEventListener('pause', handlePause)
+        video.removeEventListener('seeked', handleSeeked)
+      }
+    }
+  }, [isMuted])
+
+  const toggleMute = () => {
+    setIsMuted(!isMuted)
+    if (audioRef.current) {
+      if (isMuted) {
+        audioRef.current.currentTime = videoRef.current?.currentTime || 0
+        audioRef.current.play().catch(() => {})
+      } else {
+        audioRef.current.pause()
+      }
+    }
+  }
 
   return (
     <section
@@ -18,6 +56,7 @@ export default function Hero() {
       {/* Video background */}
       <div className="absolute inset-0">
         <video
+          ref={videoRef}
           autoPlay
           muted
           loop
@@ -39,6 +78,7 @@ export default function Hero() {
         {/* Dark gradient overlays */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/40 to-black/80" />
         <div className="absolute inset-0 bg-primary/25 mix-blend-multiply" />
+        <audio ref={audioRef} src="/images/hero-sfx.mp3?v=mixed" loop />
       </div>
 
       {/* Content — use flex col + items-center for reliable RTL centering */}
@@ -57,6 +97,7 @@ export default function Hero() {
         {/* Headline */}
         <div className="mb-6 w-full">
           <WordReveal
+            as="h1"
             text="بهاراتنا.. سر الطعم الأصيل"
             className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-display font-black text-white leading-tight justify-center"
             delay={0.1}
@@ -95,6 +136,17 @@ export default function Hero() {
           >
             منتجاتنا
           </a>
+          <button
+            onClick={toggleMute}
+            className="inline-flex items-center justify-center h-14 px-6 rounded-full bg-black/40 backdrop-blur-sm border border-white/20 text-white font-semibold text-base hover:bg-black/60 active:scale-95 transition-all duration-200"
+            aria-label="Toggle Sound"
+          >
+            {isMuted ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+            )}
+          </button>
         </motion.div>
 
         {/* Stats */}
