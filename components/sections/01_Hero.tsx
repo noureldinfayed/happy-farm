@@ -10,30 +10,19 @@ export default function Hero() {
   const ref = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const audioRef = useRef<HTMLAudioElement>(null)
-  const hasInteracted = useRef(false)
   const [isMuted, setIsMuted] = useState(false)
   const isInView = useInView(ref, { once: true })
 
   useEffect(() => {
-    const handleInteraction = () => {
-      if (!hasInteracted.current) {
-        hasInteracted.current = true
-        setIsMuted(false)
-        if (audioRef.current) {
-          audioRef.current.play().catch(() => {})
-        }
+    const handleGlobalClick = () => {
+      if (audioRef.current && audioRef.current.paused) {
+        audioRef.current.play().then(() => {
+          setIsMuted(false)
+        }).catch(() => {})
       }
     }
-
-    window.addEventListener('click', handleInteraction, { once: true })
-    window.addEventListener('scroll', handleInteraction, { once: true })
-    window.addEventListener('touchstart', handleInteraction, { once: true })
-
-    return () => {
-      window.removeEventListener('click', handleInteraction)
-      window.removeEventListener('scroll', handleInteraction)
-      window.removeEventListener('touchstart', handleInteraction)
-    }
+    window.addEventListener('click', handleGlobalClick, { once: true })
+    return () => window.removeEventListener('click', handleGlobalClick)
   }, [])
 
   useEffect(() => {
@@ -42,7 +31,13 @@ export default function Hero() {
     
     if (video && audio) {
       const handlePlay = () => {
-        if (!isMuted) audio.play().catch(() => setIsMuted(true))
+        if (!isMuted) {
+          audio.play().then(() => {
+            setIsMuted(false)
+          }).catch(() => {
+            setIsMuted(true)
+          })
+        }
       }
       const handlePause = () => audio.pause()
       const handleSeeked = () => { audio.currentTime = video.currentTime }
@@ -59,15 +54,17 @@ export default function Hero() {
     }
   }, [isMuted])
 
-  const toggleMute = () => {
-    hasInteracted.current = true // Prevent global listener from overriding
-    setIsMuted(!isMuted)
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (audioRef.current) {
       if (isMuted) {
         audioRef.current.currentTime = videoRef.current?.currentTime || 0
-        audioRef.current.play().catch(() => {})
+        audioRef.current.play().then(() => {
+          setIsMuted(false)
+        }).catch(() => {})
       } else {
         audioRef.current.pause()
+        setIsMuted(true)
       }
     }
   }
